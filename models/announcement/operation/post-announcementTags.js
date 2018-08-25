@@ -14,7 +14,7 @@ module.exports = async ( { announcementId, tagId, } = {} ) => {
     .then(
         announcementTags => announcementTags.map(
             announcementTag => ( {
-                announcementId:   announcementTag.announcementId,
+                announcementId: announcementTag.announcementId,
                 tagId:          announcementTag.tagId,
             } )
         )
