@@ -26,12 +26,6 @@ module.exports = async ( { announcementId, announcementData, } = {} ) => {
     }
 
     await table.announcement.update( announcementData, {
-        include: [
-            {
-                model:      table.announcementI18n,
-                as:         'announcementI18n',
-            },
-        ],
         where: {
             announcementId,
         },

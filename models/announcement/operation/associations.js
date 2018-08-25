@@ -62,7 +62,6 @@ module.exports = async () => {
         as:         'tagI18n',
         foreignKey: 'tagId',
         sourceKey:  'tagId',
-        onDelete:   'CASCADE',
     } );
 
     // Any one who use this module should remember to close connection,

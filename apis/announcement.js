@@ -226,8 +226,9 @@ apis.delete( '/:id/file/:id', async ( req, res ) => {
 } );
 
 apis.post( '/:id/tags', async ( req, res ) => {
+    const tagId = req.query.tagId.split( ',' ).map( s => Number.parseInt( s, 10 ) );
     try {
-        res.json( await postAnnouncementTags( { announcementId: req.params.id, tagId: req.body, } ) );
+        res.json( await postAnnouncementTags( { announcementId: req.params.id, tagId, } ) );
     }
     catch ( e ) {
         /* eslint no-magic-numbers: 'off' */
