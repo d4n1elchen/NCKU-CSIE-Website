@@ -5,16 +5,18 @@ const associations = require( `${ projectRoot }/models/announcement/operation/as
 module.exports = async ( { announcementId, } = {} ) => {
     const table = await associations();
 
-    const rowCount = await table.announcement.destroy( {
+    const result = await table.announcement.destroy( {
         where: {
             announcementId,
         },
     } )
     .then(
-        rowCount => rowCount
+        rowCount => ( {
+            affectedRowCount: rowCount,
+        } )
     );
 
     table.database.close();
 
-    return rowCount;
+    return result;
 };

@@ -11,7 +11,7 @@ module.exports = async ( { announcementId, announcementData, } = {} ) => {
     // Initialize result object
     const result = {};
     result.i18n = {};
-    result.i18n.affectedCount = {};
+    result.i18n.affectedRowCount = {};
 
     for ( let i = 0; i < i18n.length; i++ ) {
         await table.announcementI18n.update( i18n[ i ], {
@@ -21,7 +21,7 @@ module.exports = async ( { announcementId, announcementData, } = {} ) => {
             },
         } )
         .then(
-            ( count ) => { result.i18n.affectedCount[ i18n[ i ].language ] = count; }
+            ( count ) => { result.i18n.affectedRowCount[ i18n[ i ].language ] = count; }
         );
     }
 
@@ -31,7 +31,7 @@ module.exports = async ( { announcementId, announcementData, } = {} ) => {
         },
     } )
     .then(
-        ( count ) => { result.affectedCount = count; }
+        ( count ) => { result.affectedRowCount = count; }
     );
 
     table.database.close();

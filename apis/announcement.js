@@ -164,87 +164,133 @@ apis.get( /^\/tags-pinned$/, async ( req, res ) => {
 } );
 
 apis.get( /^\/(\d+)$/, async ( req, res ) => {
-    try {
-        res.json( await getAnnouncement( { announcementId: req.params[ 0 ], language: req.query.language, } ) );
-    }
-    catch ( e ) {
+    const result = await getAnnouncement( {
+        announcementId: req.params[ 0 ],
+        language:       req.query.language,
+    } );
+
+    if ( result.error )
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 400 ).json( result );
+    else if ( !result.length )
         /* eslint no-magic-numbers: 'off' */
         res.status( 404 ).end();
-    }
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 apis.post( '/', async ( req, res ) => {
-    try {
-        res.json( await postAnnouncement( { announcementData: req.body, } ) );
-    }
-    catch ( e ) {
+    const result = await postAnnouncement( {
+        announcementData: req.body,
+    } );
+
+    if ( result.error )
         /* eslint no-magic-numbers: 'off' */
-        res.status( 500 ).end();
-    }
+        res.status( 400 ).json( result );
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 apis.patch( '/:id', async ( req, res ) => {
-    try {
-        res.json( await patchAnnouncement( { announcementId: req.params.id, announcementData: req.body, } ) );
-    }
-    catch ( e ) {
+    const result = await patchAnnouncement( {
+        announcementId:   req.params.id,
+        announcementData: req.body,
+    } );
+
+    if ( result.error )
         /* eslint no-magic-numbers: 'off' */
-        res.status( 500 ).end();
-    }
+        res.status( 400 ).json( result );
+    else if ( !result.affectedRowCount )
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 404 ).end();
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 apis.delete( '/:id', async ( req, res ) => {
-    try {
-        res.json( await deleteAnnouncement( { announcementId: req.params.id, } ) );
-    }
-    catch ( e ) {
+    const result = await deleteAnnouncement( {
+        announcementId: req.params.id,
+    } );
+
+    if ( result.error )
         /* eslint no-magic-numbers: 'off' */
-        res.status( 500 ).end();
-    }
+        res.status( 400 ).json( result );
+    else if ( !result.affectedRowCount )
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 404 ).end();
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 // TODO: Not yet finished
 apis.post( '/:id/file', async ( req, res ) => {
-    try {
-        res.json( await postAnnouncementFile( { announcementFileData: req.body, } ) );
-    }
-    catch ( e ) {
+    const result = await postAnnouncementFile( {
+        announcementFileData: req.body,
+    } );
+
+    if ( result.error )
         /* eslint no-magic-numbers: 'off' */
-        res.status( 500 ).end();
-    }
+        res.status( 400 ).json( result );
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 // TODO: Not yet finished
 apis.delete( '/:id/file/:id', async ( req, res ) => {
-    try {
-        res.json( await deleteAnnouncementFiles( { announcementFileData: req.body, } ) );
-    }
-    catch ( e ) {
+    const result = await deleteAnnouncementFiles( {
+        announcementFileData: req.body,
+    } );
+
+    if ( result.error )
         /* eslint no-magic-numbers: 'off' */
-        res.status( 500 ).end();
-    }
+        res.status( 400 ).json( result );
+    else if ( !result.length )
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 404 ).end();
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 apis.post( '/:id/tags', async ( req, res ) => {
     const tagId = req.query.tagId.split( ',' ).map( s => Number.parseInt( s, 10 ) );
-    try {
-        res.json( await postAnnouncementTags( { announcementId: req.params.id, tagId, } ) );
-    }
-    catch ( e ) {
+    const result = await postAnnouncementTags( {
+        announcementId: req.params.id,
+        tagId,
+    } );
+
+    if ( result.error )
         /* eslint no-magic-numbers: 'off' */
-        res.status( 500 ).end();
-    }
+        res.status( 400 ).json( result );
+    else if ( !result.length )
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 404 ).end();
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 apis.delete( '/:id/tags', async ( req, res ) => {
     const tagId = req.query.tagId.split( ',' ).map( s => Number.parseInt( s, 10 ) );
-    try {
-        res.json( await deleteAnnouncementTags( { announcementId: req.params.id, tagId, } ) );
-    }
-    catch ( e ) {
+    const result = await deleteAnnouncementTags( {
+        announcementId: req.params.id,
+        tagId,
+    } );
+
+    if ( result.error )
         /* eslint no-magic-numbers: 'off' */
-        res.status( 500 ).end();
-    }
+        res.status( 400 ).json( result );
+    else if ( !result.affectedRowCount )
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 404 ).end();
+    else
+        /* eslint no-magic-numbers: 'off' */
+        res.status( 200 ).json( result );
 } );
 
 module.exports = apis;
