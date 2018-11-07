@@ -1,36 +1,75 @@
 import associations from 'models/announcement/operation/associations.js';
+import languageSettings from 'settings/language/config.js';
 
-export default async ( { announcementId, announcementData, } = {} ) => {
+export default async ( { announcementId, structuredData, } = {} ) => {
     const table = await associations();
-
-    const i18n = announcementData.announcementI18n;
-    delete announcementData.announcementI18n;
 
     // Initialize result object
     const result = {};
     result.i18n = {};
-    result.i18n.affectedRowCount = {};
+    result.i18n.affectedCount = {};
 
-    for ( let i = 0; i < i18n.length; i++ ) {
-        await table.announcementI18n.update( i18n[ i ], {
-            where: {
-                language: i18n[ i ].language,
-                announcementId,
+    // Update i18n
+    languageSettings.support.forEach( async ( lang ) => {
+        if ( lang in structuredData ) {
+            const i18nData = {
+                title:    structuredData[ lang ].title,
+                content:  structuredData[ lang ].content,
+            };
+            result.i18n.affectedCount[ lang ] = await table.announcementI18n.update( i18nData, {
+                where: {
+                    language: lang,
+                    announcementId,
+                },
+            } );
+        }
+    } );
+
+    // Construct announcement data
+    const announcementData = {};
+
+    if ( 'author' in structuredData )
+        announcementData.author = structuredData.author;
+
+    if ( 'isPinned' in structuredData )
+        announcementData.isPinned = structuredData.isPinned;
+
+    if ( 'isPublished' in structuredData )
+        announcementData.isPublished = structuredData.isPublished;
+
+    result.affectedCount = await table.announcement.update( structuredData, {
+        include: [
+            {
+                model:      table.announcementI18n,
+                as:         'announcementI18n',
             },
-        } )
-        .then(
-            ( count ) => { result.i18n.affectedRowCount[ i18n[ i ].language ] = count; }
-        );
-    }
-
-    await table.announcement.update( announcementData, {
+        ],
         where: {
             announcementId,
         },
-    } )
-    .then(
-        ( count ) => { result.affectedRowCount = count; }
-    );
+    } );
+
+    // Update tags if exist
+    if ( 'tags' in structuredData ) {
+        // Construct tag data
+        const announcementTagData = structuredData.tags.map( id => ( {
+            announcementId,
+            tagId: id,
+        } ) );
+
+        // Delete all tags
+        await table.announcementTag.destroy( {
+            where: { announcementId, },
+        } );
+
+        // Create tags
+        result.announcementTag = await table.announcementTag.bulkCreate( announcementTagData )
+        .then(
+            announcementTags => announcementTags.map(
+                announcementTag => announcementTag.tagId
+            )
+        );
+    }
 
     table.database.close();
 

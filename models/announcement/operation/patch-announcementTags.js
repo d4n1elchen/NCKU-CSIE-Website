@@ -8,6 +8,12 @@ export default async ( { announcementId, tagId, } = {} ) => {
         tagId: id,
     } ) );
 
+    // Delete all tags
+    await table.announcementTag.destroy( {
+        where: { announcementId, },
+    } );
+
+    // Create tags
     const data = await table.announcementTag.bulkCreate( announcementTagData )
     .then(
         announcementTags => announcementTags.map(

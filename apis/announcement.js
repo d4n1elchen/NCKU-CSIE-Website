@@ -191,7 +191,7 @@ apis.get( /^\/(\d+)$/, async ( req, res ) => {
 
 apis.post( '/', async ( req, res ) => {
     const result = await postAnnouncement( {
-        announcementData: req.body,
+        structuredData: req.body,
     } );
 
     if ( result.error )
@@ -204,8 +204,8 @@ apis.post( '/', async ( req, res ) => {
 
 apis.patch( '/:id', async ( req, res ) => {
     const result = await patchAnnouncement( {
-        announcementId:   req.params.id,
-        announcementData: req.body,
+        announcementId: req.params.id,
+        structuredData: req.body,
     } );
 
     if ( result.error )

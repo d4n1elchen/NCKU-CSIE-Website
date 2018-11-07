@@ -59,7 +59,6 @@ export default async ( { language = defaultValue.language, announcementId = 1, }
         attributes: [
             'announcementId',
             'author',
-            'publishTime',
             'updateTime',
             'views',
             'isPinned',
@@ -74,7 +73,6 @@ export default async ( { language = defaultValue.language, announcementId = 1, }
             title:       announcement.announcementI18n[ 0 ].title,
             content:     announcement.announcementI18n[ 0 ].content,
             author:      announcement.author,
-            publishTime: announcement.publishTime,
             updateTime:  announcement.updateTime,
             views:       announcement.views,
             isPinned:    announcement.isPinned,

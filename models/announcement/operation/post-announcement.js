@@ -1,72 +1,73 @@
 import associations from 'models/announcement/operation/associations.js';
 import languageSettings from 'settings/language/config.js';
 
-function isLangExist ( data, language ) {
-    for ( let i = 0; i < data.length; i++ ) {
-        if ( data[ i ].language === language )
-            return true;
-    }
-    return false;
-}
-
-export default async ( { announcementData, } = {} ) => {
+export default async ( {
+    structuredData,
+} = {} ) => {
     const table = await associations();
 
+    // Construct i18n data
+    const announcementI18n = [];
     languageSettings.support.forEach( ( lang ) => {
-        if ( !isLangExist( announcementData.announcementI18n, lang ) )
+        if ( !( lang in structuredData ) )
             throw new Error( `Missing language for announcementI18n: ${ lang }` );
-
-        announcementData.announcementFile.forEach( ( file ) => {
-            if ( !isLangExist( file.announcementFileI18n, lang ) )
-                throw new Error( `Missing language for announcementFileI18n: ${ lang }` );
-        } );
+        else {
+            announcementI18n.push( {
+                language: lang,
+                title:    structuredData[ lang ].title,
+                content:  structuredData[ lang ].content,
+            } );
+        }
     } );
 
+    // Construct announcementData object
+    const announcementData = {
+        announcementI18n,
+    };
+
+    if ( 'author' in structuredData )
+        announcementData.author = structuredData.author;
+
+    if ( 'isPinned' in structuredData )
+        announcementData.isPinned = structuredData.isPinned;
+
+    if ( 'isPublished' in structuredData )
+        announcementData.isPublished = structuredData.isPublished;
+
+    // Translate tags from array to object array
+    if ( 'tags' in structuredData ) {
+        announcementData.announcementTag = structuredData.tags.map( tag => ( {
+            tagId: tag,
+        } ) );
+    }
+    else
+        announcementData.announcementTag = [];
+
+
+    // eslint-disable-next-line no-console
+    console.info( announcementData );
+
     const data = await table.announcement.create( announcementData, {
-        include: [
-            {
-                model:   table.announcementI18n,
-                as:      'announcementI18n',
-            },
-            {
-                model:   table.announcementTag,
-                as:      'announcementTag',
-            },
-            {
-                model:   table.announcementFile,
-                as:      'announcementFile',
-                include: [
-                    {
-                        model: table.announcementFileI18n,
-                        as:    'announcementFileI18n',
-                    },
-                ],
-            },
-        ],
+        include: [ {
+            model: table.announcementI18n,
+            as:    'announcementI18n',
+        },
+        {
+            model:   table.announcementFile,
+            as:      'announcementFile',
+            include: [ {
+                model: table.announcementFileI18n,
+                as:    'announcementFileI18n',
+            }, ],
+        },
+        {
+            model: table.announcementTag,
+            as:    'announcementTag',
+        }, ],
     } )
     .then(
         announcement => ( {
-            id:          announcement.announcementId,
-            title:       announcement.announcementI18n[ 0 ].title,
-            content:     announcement.announcementI18n[ 0 ].content,
-            author:      announcement.author,
-            publishTime: announcement.publishTime,
-            updateTime:  announcement.updateTime,
-            views:       announcement.views,
-            isPinned:    announcement.isPinned,
-            files:       announcement.announcementFile.map(
-                announcementFile => ( {
-                    uploadTime: announcementFile.uploadTime,
-                    type:       announcementFile.type,
-                    url:        announcementFile.announcementFileI18n[ 0 ].url,
-                    name:       announcementFile.announcementFileI18n[ 0 ].name,
-                } ),
-            ),
-            tags:        announcement.announcementTag.map(
-                announcementTag => ( {
-                    id:   announcementTag.tagId,
-                } )
-            ),
+            id: announcement.announcementId,
         } )
     );
 
