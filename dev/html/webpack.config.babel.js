@@ -1,17 +1,13 @@
-const path = require( 'path' );
+import path from 'path';
+import language from '../../settings/language/config.js';
+import config from '../../settings/server/config.js';
 
-const projectRoot = path.dirname( path.dirname( __dirname ) );
-const language = require( path.join( projectRoot, 'settings/language/config' ) );
-const pugRoot = path.join( projectRoot, 'static/src/pug' );
-const htmlRoot = path.join( projectRoot, 'static/dist/html' );
-const { staticUrl, } = require( path.join( projectRoot, 'settings/server/config' ) );
-const devMode = true;
+const pugRoot = path.join( config.projectRoot, 'static/src/pug' );
+const htmlRoot = path.join( config.projectRoot, 'static/dist/html' );
 
-/* Process.env.NODE_ENV !== 'production'*/
-
-module.exports = language.support.map( language => ( {
-    devtool: devMode ? 'inline-sourcemap' : null,
-    mode:    devMode ? 'development' : 'production',
+export default language.support.map( language => ( {
+    devtool: 'inline-sourcemap',
+    mode:    'development',
     entry:   {
         // Route `about`
         'about/award':          path.join( pugRoot, 'about/award.pug' ),
@@ -58,7 +54,10 @@ module.exports = language.support.map( language => ( {
         'student/scholarship':   path.join( pugRoot, 'student/scholarship.pug' ),
 
         // Route `user`
-        'user/announcement': path.join( pugRoot, 'user/announcement.pug' ),
+        'user/index':              path.join( pugRoot, 'user/index.pug' ),
+        'user/announcement/index': path.join( pugRoot, 'user/announcement/index.pug' ),
+        'user/announcement/add':   path.join( pugRoot, 'user/announcement/add.pug' ),
+        'user/announcement/edit':  path.join( pugRoot, 'user/announcement/edit.pug' ),
     },
     output: {
         path:     htmlRoot,
@@ -73,18 +72,27 @@ module.exports = language.support.map( language => ( {
                     {
                         loader:  'file-loader',
                         options: {
-                            regExp: /pug\/([A-Za-z0-9_-]+)\/([A-Za-z0-9_-]+).pug/,
-                            name:   `[1]/[2].${ language }.html`,
+                            name ( file ) {
+                                // Get correct file name related to pugRoot
+                                return `${ file.split( pugRoot )[ 1 ].split( '.pug' )[ 0 ] }.${ language }.html`;
+                            },
                         },
                     },
                     'extract-loader',
-                    'html-loader',
+                    {
+                        loader:  'html-loader',
+                        options: {
+                            // Convert root path `/` into `config.projectRoot`.
+                            // Mainly used by `static/src/pug/components/common/image.pug`.
+                            root: config.projectRoot,
+                        },
+                    },
                     {
                         loader:  'pug-html-loader',
                         options: {
                             basedir: pugRoot,
                             data:    {
-                                staticUrl,
+                                staticHost: config.staticHost,
                                 language,
                             },
                         },

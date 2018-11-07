@@ -1,8 +1,6 @@
-const path = require( 'path' );
-const projectRoot = path.dirname( path.dirname( path.dirname( __dirname ) ) );
-const associations = require( `${ projectRoot }/models/faculty/operation/associations` );
+import associations from 'models/faculty/operation/associations.js';
 
-module.exports = async ( language = 'zh-TW' ) => {
+export default async ( language = 'zh-TW' ) => {
     const table = await associations();
 
     const data = await table.profile.findAll( {
@@ -20,6 +18,7 @@ module.exports = async ( language = 'zh-TW' ) => {
                 const [
                     departments,
                     offices,
+                    labs,
                     profileI18n,
                     titles,
                 ] = await Promise.all( [
@@ -76,6 +75,34 @@ module.exports = async ( language = 'zh-TW' ) => {
                             } )
                         )
                     ),
+                    table.lab.findAll( {
+                        include: [
+                            {
+                                model:      table.labI18n,
+                                as:         'labI18n',
+                                attributes: [
+                                    'name',
+                                ],
+                                where: {
+                                    language,
+                                },
+                            },
+                        ],
+                        attributes: [
+                            'labWeb',
+                        ],
+                        where: {
+                            profileId: profile.profileId,
+                        },
+                    } )
+                    .then(
+                        labs => labs.map(
+                            lab => ( {
+                                labWeb:  lab.labWeb,
+                                name:    lab.labI18n[ 0 ].name,
+                            } )
+                        )
+                    ),
                     table.profileI18n.findOne( {
                         attributes: [
                             'name',
@@ -127,6 +154,7 @@ module.exports = async ( language = 'zh-TW' ) => {
                     titles,
                     departments,
                     offices,
+                    labs,
                 } );
             }
         ) )
